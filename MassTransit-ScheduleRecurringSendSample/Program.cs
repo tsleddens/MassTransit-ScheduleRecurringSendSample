@@ -3,6 +3,7 @@ using Hangfire.MemoryStorage;
 using MassTransit;
 using MassTransit.Definition;
 using MassTransit.Scheduling;
+using MassTransit_ScheduleRecurringSendSample;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,7 +35,7 @@ builder.ConfigureServices((context, services) =>
                 h.Password(eventBusSettings.Password);
             });
             factoryConfigurator.UseHangfireScheduler();
-
+            
             factoryConfigurator.ConfigureEndpoints(registrationContext, DefaultEndpointNameFormatter.Instance);
         });
     });
@@ -68,7 +69,7 @@ public class SetupRecurringSend : IHostedService
         var sendEndpoint = await _bus.GetSendEndpoint(sendEndpointUri);
         
         string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
-        await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage("Hello World"), cancellationToken);
+        await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage{ Text = "Hello world!"}, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -82,24 +83,6 @@ public class ScheduleTest : DefaultRecurringSchedule
     public ScheduleTest()
     {
         CronExpression = "* * * * *";
-    }
-}
-
-public class TestMessage
-{
-    public string Text { get; }
-
-    public TestMessage(string text)
-    {
-        Text = text;
-    }
-}
-
-public class TestMessageConsumer : IConsumer<TestMessage>
-{
-    public async Task Consume(ConsumeContext<TestMessage> context)
-    {
-        await Console.Out.WriteLineAsync($"----------------------------------------------------------------- MESSAGE RECEIVED {context.Message.Text}");
     }
 }
 
