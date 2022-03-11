@@ -6,17 +6,19 @@ using MassTransit.Scheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureServices((context, services) =>
 {
+    services.AddScoped<SetupRecurringSend>();
+
     services.AddHangfire(configuration =>
     {
         configuration.UseMemoryStorage();
     });
     services.AddHangfireServer();
-
 
     var eventBusSettings = context.Configuration.GetSection(EventBusSettings.SectionName).Get<EventBusSettings>();
 
@@ -37,25 +39,42 @@ builder.ConfigureServices((context, services) =>
         });
     });
 
-    services.AddMassTransitHostedService();
+    services.AddMassTransitHostedService(true);
+
+    services.AddHostedService<SetupRecurringSend>();
 });
 
 var host = builder.Build();
 
-await RegisterScheduler(host.Services);
-
 await host.RunAsync();
 
-async Task RegisterScheduler(IServiceProvider services)
+public class SetupRecurringSend : IHostedService
 {
-    var bus = services.GetRequiredService<IBus>();
+    private readonly IBus _bus;
+    private readonly ILogger<SetupRecurringSend> _logger;
 
-    Uri sendEndpointUri = new("queue:hangfire");
+    public SetupRecurringSend(IBus bus, ILogger<SetupRecurringSend> logger)
+    {
+        _bus = bus;
+        _logger = logger;
+    }
 
-    var sendEndpoint = await bus.GetSendEndpoint(sendEndpointUri);
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("---------------- SETTING UP RECURRING SCHEDULE -----------------");
 
-    string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
-    await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage("Hello World"));
+        Uri sendEndpointUri = new("queue:hangfire");
+        
+        var sendEndpoint = await _bus.GetSendEndpoint(sendEndpointUri);
+        
+        string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
+        await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage("Hello World"), cancellationToken);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 public class ScheduleTest : DefaultRecurringSchedule
