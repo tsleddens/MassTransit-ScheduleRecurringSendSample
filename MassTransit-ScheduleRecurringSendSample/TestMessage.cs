@@ -3,10 +3,7 @@
 namespace MassTransit_ScheduleRecurringSendSample;
 
 
-public class TestMessage
-{
-    public string Text { get; set; }
-}
+public record TestMessage(string Text);
 
 public class TestMessageConsumer : IConsumer<TestMessage>
 {

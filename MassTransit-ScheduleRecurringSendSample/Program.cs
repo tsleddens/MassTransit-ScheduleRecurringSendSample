@@ -29,7 +29,6 @@ builder.ConfigureServices((context, services) =>
         {
             factoryConfigurator.Host(context.Configuration.GetConnectionString("RabbitMQ"));
             factoryConfigurator.UseHangfireScheduler();
-            
             factoryConfigurator.ConfigureEndpoints(registrationContext, DefaultEndpointNameFormatter.Instance);
         });
     });
@@ -63,7 +62,7 @@ public class SetupRecurringSend : IHostedService
         var sendEndpoint = await _bus.GetSendEndpoint(sendEndpointUri);
         
         string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
-        await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage{ Text = "Hello world!"}, cancellationToken);
+        await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage("Hello world!"), cancellationToken);
         await StopAsync(cancellationToken);
     }
 
