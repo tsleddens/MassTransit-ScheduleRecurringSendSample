@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  masstransit-schedulerecurringsendsample:
+    image: ${DOCKER_REGISTRY-}masstransitschedulerecurringsendsample
+    build:
+      context: .
+      dockerfile: MassTransit-ScheduleRecurringSendSample/Dockerfile
+    networks:
+      - samplenet
+   
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - samplenet
+
+networks:
+  samplenet: {}

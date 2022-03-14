@@ -21,19 +21,13 @@ builder.ConfigureServices((context, services) =>
     });
     services.AddHangfireServer();
 
-    var eventBusSettings = context.Configuration.GetSection(EventBusSettings.SectionName).Get<EventBusSettings>();
-
     services.AddMassTransit(configurator =>
     {
         configurator.AddConsumer<TestMessageConsumer>();
 
         configurator.UsingRabbitMq((registrationContext, factoryConfigurator) =>
         {
-            factoryConfigurator.Host(eventBusSettings.Host, h =>
-            {
-                h.Username(eventBusSettings.Username);
-                h.Password(eventBusSettings.Password);
-            });
+            factoryConfigurator.Host(context.Configuration.GetConnectionString("RabbitMQ"));
             factoryConfigurator.UseHangfireScheduler();
             
             factoryConfigurator.ConfigureEndpoints(registrationContext, DefaultEndpointNameFormatter.Instance);
@@ -70,12 +64,10 @@ public class SetupRecurringSend : IHostedService
         
         string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
         await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage{ Text = "Hello world!"}, cancellationToken);
+        await StopAsync(cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
 public class ScheduleTest : DefaultRecurringSchedule
@@ -84,13 +76,4 @@ public class ScheduleTest : DefaultRecurringSchedule
     {
         CronExpression = "* * * * *";
     }
-}
-
-public record EventBusSettings
-{
-    public const string SectionName = "EventBus";
-
-    public string Host { get; init; } = null!;
-    public string Username { get; init; } = null!;
-    public string Password { get; init; } = null!;
 }

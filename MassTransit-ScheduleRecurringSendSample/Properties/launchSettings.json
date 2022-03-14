@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MassTransit-ScheduleRecurringSendSample": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

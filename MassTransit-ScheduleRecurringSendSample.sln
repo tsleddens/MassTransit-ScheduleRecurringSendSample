@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassTransit-ScheduleRecurringSendSample", "MassTransit-ScheduleRecurringSendSample\MassTransit-ScheduleRecurringSendSample.csproj", "{9F8E0E17-E6F3-425C-96A9-240CEC25EC3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MassTransit-ScheduleRecurringSendSample", "MassTransit-ScheduleRecurringSendSample\MassTransit-ScheduleRecurringSendSample.csproj", "{9F8E0E17-E6F3-425C-96A9-240CEC25EC3C}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{664BD421-D4A5-4699-A8BA-F7A3BF4D08EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9F8E0E17-E6F3-425C-96A9-240CEC25EC3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8E0E17-E6F3-425C-96A9-240CEC25EC3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8E0E17-E6F3-425C-96A9-240CEC25EC3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{664BD421-D4A5-4699-A8BA-F7A3BF4D08EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664BD421-D4A5-4699-A8BA-F7A3BF4D08EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664BD421-D4A5-4699-A8BA-F7A3BF4D08EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664BD421-D4A5-4699-A8BA-F7A3BF4D08EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
