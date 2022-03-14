@@ -13,7 +13,7 @@ var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureServices((context, services) =>
 {
-    services.AddScoped<SetupRecurringSend>();
+    services.AddScoped<MassTransitConsoleHostedService>();
 
     services.AddHangfire(configuration =>
     {
@@ -33,21 +33,19 @@ builder.ConfigureServices((context, services) =>
         });
     });
 
-    services.AddMassTransitHostedService(true);
-
-    services.AddHostedService<SetupRecurringSend>();
+    services.AddHostedService<MassTransitConsoleHostedService>();
 });
 
 var host = builder.Build();
 
 await host.RunAsync();
 
-public class SetupRecurringSend : IHostedService
+public class MassTransitConsoleHostedService : IHostedService
 {
-    private readonly IBus _bus;
-    private readonly ILogger<SetupRecurringSend> _logger;
+    private readonly IBusControl _bus;
+    private readonly ILogger<MassTransitConsoleHostedService> _logger;
 
-    public SetupRecurringSend(IBus bus, ILogger<SetupRecurringSend> logger)
+    public MassTransitConsoleHostedService(IBusControl bus, ILogger<MassTransitConsoleHostedService> logger)
     {
         _bus = bus;
         _logger = logger;
@@ -63,10 +61,14 @@ public class SetupRecurringSend : IHostedService
         
         string consumerEndpointName = DefaultEndpointNameFormatter.Instance.Consumer<TestMessageConsumer>();
         await sendEndpoint.ScheduleRecurringSend(new Uri($"queue:{consumerEndpointName}"), new ScheduleTest(), new TestMessage("Hello world!"), cancellationToken);
-        await StopAsync(cancellationToken);
+
+        await _bus.StartAsync(cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await _bus.StopAsync(cancellationToken);
+    }
 }
 
 public class ScheduleTest : DefaultRecurringSchedule

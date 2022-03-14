@@ -3,6 +3,8 @@ version: '3.4'
 services:
   masstransit-schedulerecurringsendsample:
     image: ${DOCKER_REGISTRY-}masstransitschedulerecurringsendsample
+    depends_on:
+      - rabbitmq
     build:
       context: .
       dockerfile: MassTransit-ScheduleRecurringSendSample/Dockerfile
